@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Echoria — Login</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0a0a18;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Nunito', sans-serif;
+      color: #fff;
+    }
+
+    /* Animated background stars */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 80% 10%, rgba(255,255,255,0.2) 0%, transparent 100%),
+        radial-gradient(1px 1px at 50% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 10% 60%, rgba(255,255,255,0.2) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 70%, rgba(255,255,255,0.3) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+      padding: 20px;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .logo h1 {
+      font-size: 42px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -1px;
+    }
+
+    .logo p {
+      color: #555577;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .card {
+      background: #12122a;
+      border: 1px solid #1e1e4a;
+      border-radius: 16px;
+      padding: 32px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: #0a0a18;
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 28px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 9px;
+      text-align: center;
+      border-radius: 7px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #555577;
+      transition: all 0.2s;
+      border: none;
+      background: transparent;
+    }
+
+    .tab.active {
+      background: #1e1e4a;
+      color: #a78bfa;
+    }
+
+    .form { display: none; flex-direction: column; gap: 14px; }
+    .form.active { display: flex; }
+
+    label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #555577;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    input {
+      width: 100%;
+      padding: 11px 14px;
+      background: #0a0a18;
+      border: 1px solid #1e1e4a;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 15px;
+      font-family: 'Nunito', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus { border-color: #a78bfa; }
+    input::placeholder { color: #333355; }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      margin-top: 4px;
+    }
+
+    .btn:hover { opacity: 0.9; }
+    .btn:active { transform: scale(0.98); }
+
+    .error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .error.show { display: block; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="logo">
+      <h1>Echoria</h1>
+      <p>Your world. Your vibe.</p>
+    </div>
+
+    <div class="card">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('login')">Log In</button>
+        <button class="tab" onclick="switchTab('signup')">Sign Up</button>
+      </div>
+
+      <div id="errorMsg" class="error"></div>
+
+      <!-- LOGIN -->
+      <div id="loginForm" class="form active">
+        <div>
+          <label>Email</label>
+          <input id="loginEmail" type="email" placeholder="you@example.com" />
+        </div>
+        <div>
+          <label>Password</label>
+          <input id="loginPassword" type="password" placeholder="••••••••" />
+        </div>
+        <button class="btn" onclick="login()">Enter Echoria</button>
+      </div>
+
+      <!-- SIGNUP -->
+      <div id="signupForm" class="form">
+        <div>
+          <label>Username</label>
+          <input id="signupUsername" type="text" placeholder="coolname123" maxlength="20" />
+        </div>
+        <div>
+          <label>Email</label>
+          <input id="signupEmail" type="email" placeholder="you@example.com" />
+        </div>
+        <div>
+          <label>Password</label>
+          <input id="signupPassword" type="password" placeholder="min 6 characters" />
+        </div>
+        <button class="btn" onclick="signup()">Create Account</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".form").forEach(f => f.classList.remove("active"));
+      document.getElementById(tab + "Form").classList.add("active");
+      event.target.classList.add("active");
+      hideError();
+    }
+
+    function showError(msg) {
+      const el = document.getElementById("errorMsg");
+      el.textContent = msg;
+      el.classList.add("show");
+    }
+
+    function hideError() {
+      document.getElementById("errorMsg").classList.remove("show");
+    }
+
+    async function login() {
+      hideError();
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
+
+      if (!email || !password) return showError("Please fill in all fields");
+
+      try {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+        if (!res.ok) return showError(data.error);
+
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        window.location.href = "/index.html";
+
+      } catch (err) {
+        showError("Something went wrong, try again");
+      }
+    }
+
+    async function signup() {
+      hideError();
+      const username = document.getElementById("signupUsername").value.trim();
+      const email = document.getElementById("signupEmail").value.trim();
+      const password = document.getElementById("signupPassword").value;
+
+      if (!username || !email || !password) return showError("Please fill in all fields");
+      if (password.length < 6) return showError("Password must be at least 6 characters");
+
+      try {
+        const res = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, email, password })
+        });
+
+        const data = await res.json();
+        if (!res.ok) return showError(data.error);
+
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        window.location.href = "/index.html";
+
+      } catch (err) {
+        showError("Something went wrong, try again");
+      }
+    }
+
+    // Enter key support
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      const loginActive = document.getElementById("loginForm").classList.contains("active");
+      if (loginActive) login(); else signup();
+    });
+
+    // Redirect if already logged in
+    if (localStorage.getItem("token")) {
+      window.location.href = "/index.html";
+    }
+  </script>
+
+</body>
+</html>

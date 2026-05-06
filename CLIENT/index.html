@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <title>Echoria</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  
 
   body {
     background: #0F0F1A;
@@ -16,51 +16,100 @@
     overflow: hidden;
   }
 
+  /* ── Top Bar ── */
   #topBar {
-  position: fixed;
-  top: 12px;
-  left: 12px;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    background: #13132a;
+    border: 2px solid #2e2e6e;
+    box-shadow: 3px 3px 0 #000, 0 0 0 1px #5555cc;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    z-index: 10;
+  }
 
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  /* Pixel corner accents */
+  #topBar::before, #topBar::after {
+    content: '';
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background: #44ddff;
+  }
+  #topBar::before { top: -1px; left: -1px; }
+  #topBar::after  { bottom: -1px; right: -1px; }
 
-  padding: 4px 8px;
+  #topBarLogo {
+    font-size: 9px;
+    color: #44ddff;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.8);
+    margin-right: 4px;
+  }
 
-  background: rgba(10, 10, 24, 0.6);
-  border: 1px solid #1a1a3a;
-  border-radius: 6px;
-
-  font-size: 12px;
-  z-index: 10;
-}
+  #topBarDivider {
+    width: 1px;
+    height: 14px;
+    background: #2e2e6e;
+  }
 
   #welcomeText {
-  font-size: 13px;
-  color: #aaaaff;
-}
+    font-size: 7px;
+    color: #8888ff;
+    letter-spacing: 1px;
+  }
+
+  #onlineBadge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 6px;
+    color: #44ff99;
+    letter-spacing: 1px;
+  }
+  #onlineDot {
+    width: 5px;
+    height: 5px;
+    background: #44ff99;
+    animation: blink 1s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
 
   #logoutBtn {
-  font-size: 11px;
-  color: #8888aa;
-  background: transparent;
-  border: 1px solid #333355;
-  border-radius: 4px;
-  padding: 2px 6px;
-  cursor: pointer;
-}
+    font-family: 'Press Start 2P', monospace;
+    font-size: 6px;
+    color: #6070a0;
+    background: transparent;
+    border: 2px solid #2e2e6e;
+    padding: 5px 8px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    box-shadow: 2px 2px 0 #000;
+    margin-left: 4px;
+  }
+  #logoutBtn:hover {
+    color: #fff;
+    border-color: #8888ff;
+    background: rgba(85,85,204,0.2);
+  }
+  #logoutBtn:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0 #000;
+  }
 
-#logoutBtn:hover {
-  color: #ffffff;
-  border-color: #6666ff;
-}
+  /* ── Game ── */
   #gameWrapper {
     flex: 1;
     width: 100vw;
     overflow: hidden;
   }
 
-  /* 🔥 Chat Bar */
+  /* ── Chat Bar ── */
   #chatBar {
     position: fixed;
     bottom: 20px;
@@ -69,90 +118,97 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    width: 350px;
+    width: 370px;
     padding: 8px 12px;
-    background: rgba(10, 10, 24, 0.85);
-    border: 1px solid #1a1a3a;
-    border-radius: 12px;
-    backdrop-filter: blur(8px);
+    background: #13132a;
+    border: 2px solid #2e2e6e;
+    box-shadow: 3px 3px 0 #000, 0 0 0 1px #5555cc;
     z-index: 10;
   }
 
   #chatInput {
     flex: 1;
-    padding: 8px 12px;
-    background: #1a1a2e;
-    border: 1px solid #333366;
-    border-radius: 6px;
-    color: #ffffff;
+    padding: 8px 10px;
+    background: #0d0d20;
+    border: 2px solid #2e2e6e;
+    color: #dde6ff;
+    font-family: monospace;
     font-size: 13px;
     outline: none;
+    caret-color: #44ddff;
   }
-
-  #chatInput:focus {
-    border-color: #6666ff;
-    box-shadow: 0 0 6px #4444ff;
-  }
+  #chatInput::placeholder { color: #2e3a58; }
+  #chatInput:focus { border-color: #8888ff; }
 
   #chatHint {
-    font-size: 11px;
-    color: #555577;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 6px;
+    color: #2e2e6e;
+    white-space: nowrap;
   }
 
-  /* 💬 Chat messages */
+  /* ── Chat messages ── */
   #chatBox {
     position: fixed;
     bottom: 80px;
     left: 20px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
     z-index: 10;
   }
 
   .chatMsg {
-    background: rgba(0,0,0,0.6);
+    background: rgba(13, 13, 32, 0.85);
+    border: 1px solid #2e2e6e;
     padding: 6px 10px;
-    border-radius: 8px;
+    font-family: monospace;
     font-size: 13px;
-    color: white;
+    color: #dde6ff;
     animation: fadeOut 5s forwards;
+    max-width: 320px;
   }
-
   @keyframes fadeOut {
-    0% { opacity: 1; }
-    80% { opacity: 1; }
+    0%   { opacity: 1; }
+    80%  { opacity: 1; }
     100% { opacity: 0; }
   }
 
-  /* ✍️ typing indicator */
+  /* ── Typing indicator ── */
   #typing {
     position: fixed;
-    bottom: 60px;
+    bottom: 62px;
     left: 20px;
-    font-size: 12px;
-    color: #aaaaff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 6px;
+    color: #5555cc;
     z-index: 10;
+    letter-spacing: 1px;
   }
-</style>
+  </style>
 </head>
 <body>
+
   <div id="topBar">
-  <span id="welcomeText"></span>
-  <button id="logoutBtn">Logout</button>
-</div>
+    <div id="topBarLogo">ECHORIA</div>
+    <div id="topBarDivider"></div>
+    <span id="welcomeText"></span>
+    <div id="onlineBadge"><div id="onlineDot"></div>ONLINE</div>
+    <button id="logoutBtn">LOGOUT</button>
+  </div>
+
   <div id="chatBox"></div>
-<div id="typing"></div>
+  <div id="typing"></div>
 
-<audio id="msgSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_115b9b2f2d.mp3"></audio>
-
+  <audio id="msgSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_115b9b2f2d.mp3"></audio>
 
   <div id="gameWrapper"></div>
 
   <div id="chatBar">
     <div id="chatContainer">
-  <input id="chatInput" placeholder="Press Enter to chat..." /></div>
-    <span id="chatHint">Esc to unfocus</span>
+      <input id="chatInput" placeholder="Press Enter to chat..." />
+    </div>
+    <span id="chatHint">ESC to unfocus</span>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
@@ -171,9 +227,7 @@
       window._token = token;
       window._user = user;
 
-      
-
-// Optional color
+      document.getElementById("welcomeText").textContent = user.username.toUpperCase();
 
       document.getElementById("logoutBtn").addEventListener("click", () => {
         localStorage.removeItem("token");
@@ -185,61 +239,49 @@
       script.src = "game.js";
       document.body.appendChild(script);
     }
-    // 🎨 username color generator
-function getColor(name) {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const color = `hsl(${hash % 360}, 70%, 70%)`;
-  return color;
-}
 
-// 💬 chat UI
-const chatBox = document.getElementById("chatBox");
-const typingDiv = document.getElementById("typing");
-const msgSound = document.getElementById("msgSound");
+    function getColor(name) {
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return `hsl(${hash % 360}, 70%, 70%)`;
+    }
 
-function addMessage(username, msg) {
-  const div = document.createElement("div");
-  div.className = "chatMsg";
+    const chatBox = document.getElementById("chatBox");
+    const typingDiv = document.getElementById("typing");
+    const msgSound = document.getElementById("msgSound");
 
-  const color = getColor(username);
-  div.innerHTML = `<span style="color:${color}">${username}</span>: ${msg}`;
+    function addMessage(username, msg) {
+      const div = document.createElement("div");
+      div.className = "chatMsg";
+      const color = getColor(username);
+      const nameSpan = document.createElement("span");
+      nameSpan.style.color = color;
+      nameSpan.textContent = username;
+      div.appendChild(nameSpan);
+      div.appendChild(document.createTextNode(": " + msg));
+      chatBox.appendChild(div);
+      msgSound.currentTime = 0;
+      msgSound.play();
+      setTimeout(() => div.remove(), 5000);
+    }
 
-  chatBox.appendChild(div);
+    let typingTimeout;
+    const input = document.getElementById("chatInput");
 
-  msgSound.currentTime = 0;
-  msgSound.play();
+    input.addEventListener("input", () => {
+      socket.emit("typing", true);
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => socket.emit("typing", false), 1000);
+    });
 
-  setTimeout(() => div.remove(), 5000);
-}
+    socket.on("chat", (data) => addMessage(data.username, data.msg));
 
-// ✍️ typing indicator
-let typingTimeout;
-const input = document.getElementById("chatInput");
-
-input.addEventListener("input", () => {
-  socket.emit("typing", true);
-
-  clearTimeout(typingTimeout);
-  typingTimeout = setTimeout(() => {
-    socket.emit("typing", false);
-  }, 1000);
-});
-
-// 🔌 socket hooks
-socket.on("chat", (data) => {
-  addMessage(data.username, data.msg);
-});
-
-socket.on("typing", (username) => {
-  typingDiv.textContent = `${username} is typing...`;
-
-  setTimeout(() => {
-    typingDiv.textContent = "";
-  }, 1500);
-});
+    socket.on("typing", (username) => {
+      typingDiv.textContent = username + " IS TYPING...";
+      setTimeout(() => { typingDiv.textContent = ""; }, 1500);
+    });
   </script>
 
 </body>

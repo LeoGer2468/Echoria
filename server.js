@@ -56,9 +56,13 @@ io.on("connection", (socket) => {
   socket.on("join", (data) => {
     const region = data.region || "AS";
     const roomId = findOrCreateRoom(region);
+    const gameArea = data.room || "lobby";
+    const subRoom = `${roomId}:${gameArea}`;
 
-    socket.join(roomId);
+    socket.join(roomId);    // main room for capacity management
+    socket.join(subRoom);   // sub-room for game area scoped events
     socket.roomId = roomId;
+    socket.subRoom = subRoom;
     socket.region = region;
 
     players[socket.id] = {
@@ -66,79 +70,64 @@ io.on("connection", (socket) => {
       y: 300,
       username: data.username || "Stranger",
       region,
-      roomId
+      roomId,
+      gameArea
     };
 
     rooms[region][roomId].players.push(socket.id);
 
-    const roomPlayers = {};
+    // Only send players in the same game area
+    const areaPlayers = {};
     for (let id of rooms[region][roomId].players) {
-      if (id !== socket.id && players[id]) {
-        roomPlayers[id] = players[id];
+      if (id !== socket.id && players[id] && players[id].gameArea === gameArea) {
+        areaPlayers[id] = players[id];
       }
     }
 
-    socket.emit("currentPlayers", roomPlayers);
-    socket.emit("existingNotes", notes.filter(n => n.roomId === roomId));
+    socket.emit("currentPlayers", areaPlayers);
+    socket.emit("existingNotes", notes.filter(n => n.gameArea === gameArea));
 
-    socket.to(roomId).emit("newPlayer", {
+    socket.to(subRoom).emit("newPlayer", {
       id: socket.id,
       ...players[socket.id]
     });
 
-    console.log(`${data.username} joined ${roomId}`);
+    console.log(`${data.username} joined ${roomId} (${gameArea})`);
   });
 
-  // 🔁 CHANGE ROOM (FIXED)
+  // 🔁 CHANGE GAME AREA
   socket.on("changeRoom", (data) => {
     const player = players[socket.id];
     if (!player) return;
 
-    const oldRoom = player.roomId;
-    const newRoom = data.roomId;
+    const oldSubRoom = socket.subRoom;
+    const newArea = data.gameArea;
+    const newSubRoom = `${player.roomId}:${newArea}`;
 
-    // Leave old room
-    socket.leave(oldRoom);
+    // Leave old sub-room, join new one (stay in main room for capacity)
+    socket.leave(oldSubRoom);
+    socket.join(newSubRoom);
+    socket.subRoom = newSubRoom;
+    player.gameArea = newArea;
 
-    // Remove from old room
-    if (rooms[player.region]?.[oldRoom]) {
-      rooms[player.region][oldRoom].players =
-        rooms[player.region][oldRoom].players.filter(id => id !== socket.id);
+    // Notify old sub-room that this player left
+    socket.to(oldSubRoom).emit("playerDisconnected", socket.id);
 
-      if (rooms[player.region][oldRoom].players.length === 0) {
-        delete rooms[player.region][oldRoom];
+    // Get players already in the new area
+    const areaPlayers = {};
+    if (rooms[player.region]?.[player.roomId]) {
+      for (let id of rooms[player.region][player.roomId].players) {
+        if (id !== socket.id && players[id] && players[id].gameArea === newArea) {
+          areaPlayers[id] = players[id];
+        }
       }
     }
 
-    // Create new room if needed
-    if (!rooms[player.region][newRoom]) {
-      rooms[player.region][newRoom] = { players: [] };
-    }
+    socket.emit("currentPlayers", areaPlayers);
+    socket.emit("existingNotes", notes.filter(n => n.gameArea === newArea));
 
-    // Join new room
-    socket.join(newRoom);
-    rooms[player.region][newRoom].players.push(socket.id);
-
-    // Update player
-    player.roomId = newRoom;
-    socket.roomId = newRoom;
-
-    // Notify old room
-    socket.to(oldRoom).emit("playerDisconnected", socket.id);
-
-    // Send new room state
-    const roomPlayers = {};
-    for (let id of rooms[player.region][newRoom].players) {
-      if (id !== socket.id && players[id]) {
-        roomPlayers[id] = players[id];
-      }
-    }
-
-    socket.emit("currentPlayers", roomPlayers);
-    socket.emit("existingNotes", notes.filter(n => n.roomId === newRoom));
-
-    // Notify new room
-    socket.to(newRoom).emit("newPlayer", {
+    // Notify new sub-room
+    socket.to(newSubRoom).emit("newPlayer", {
       id: socket.id,
       ...player
     });
@@ -151,7 +140,7 @@ io.on("connection", (socket) => {
     players[socket.id].x = data.x;
     players[socket.id].y = data.y;
 
-    socket.to(socket.roomId).emit("playerMoved", {
+    socket.to(socket.subRoom).emit("playerMoved", {
       id: socket.id,
       x: data.x,
       y: data.y,
@@ -163,18 +152,18 @@ io.on("connection", (socket) => {
   socket.on("chat", (msg) => {
     if (!players[socket.id]) return;
 
-    io.to(socket.roomId).emit("chat", {
+    io.to(socket.subRoom).emit("chat", {
       id: socket.id,
       username: players[socket.id].username,
       msg
     });
   });
-  // ✍️ ADD THIS RIGHT HERE
-socket.on("typing", (isTyping) => {
-  if (!players[socket.id]) return;
 
-  socket.to(socket.roomId).emit("typing", players[socket.id].username);
-});
+  // ✍️ TYPING
+  socket.on("typing", (isTyping) => {
+    if (!players[socket.id]) return;
+    socket.to(socket.subRoom).emit("typing", players[socket.id].username);
+  });
 
   // 📝 NOTES
   socket.on("placeNote", (data) => {
@@ -185,14 +174,14 @@ socket.on("typing", (isTyping) => {
       y: data.y,
       text: data.text,
       author: players[socket.id].username,
-      roomId: socket.roomId
+      gameArea: players[socket.id].gameArea
     };
 
     notes.push(note);
-    io.to(socket.roomId).emit("newNote", note);
+    io.to(socket.subRoom).emit("newNote", note);
   });
 
-  // ❌ DISCONNECT (FIXED)
+  // ❌ DISCONNECT
   socket.on("disconnect", () => {
     const p = players[socket.id];
 
@@ -207,7 +196,9 @@ socket.on("typing", (isTyping) => {
 
     delete players[socket.id];
 
-    socket.to(socket.roomId).emit("playerDisconnected", socket.id);
+    if (socket.subRoom) {
+      socket.to(socket.subRoom).emit("playerDisconnected", socket.id);
+    }
     console.log("Disconnected:", socket.id);
   });
 });
